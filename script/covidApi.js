@@ -2,6 +2,7 @@ $(async function () {
     var api = new CovidAPI();
     var resultArg = await api.GetByCountry('argentina');
     var resultEsp = await api.GetByCountry('spain');
+    var resultIta = await api.GetByCountry('italy');
 
     var global = await api.GetByCountrys();
 
@@ -10,7 +11,7 @@ $(async function () {
     var datosGeo =[]
     var day = 1;
     
-    datosGraf.push(['Day','Argentina','España'])
+    datosGraf.push(['Day','Argentina','España', 'Italia'])
     datosGeo.push(['Country','Cantidad de Casos'])
 
     // datosGeo.push(['Argentina', resultArg[resultArg.length-1].count])
@@ -26,6 +27,7 @@ $(async function () {
     
     var filterArg = resultArg.filter(e => e.count > 0)
     var filterEsp = resultEsp.filter(e => e.count > 0)
+    var filterIta = resultIta.filter(e => e.count > 0)
 
     var maxCount = filterArg.length > filterEsp.length ? filterArg.length : filterEsp.length
 
@@ -33,9 +35,10 @@ $(async function () {
 
         var valorArg = filterArg.length > index ? filterArg[index].count : null ;
         var valorEsp = filterEsp.length > index ? filterEsp[index].count : null ;
+        var valorIta = filterIta.length > index ? filterIta[index].count : null ;
 
-        datosGraf.push([index + 1,valorArg, valorEsp])
-        datosTable.push([valorArg, valorEsp])
+        datosGraf.push([index + 1,valorArg, valorEsp, valorIta])
+        datosTable.push([valorArg, valorEsp, valorIta])
     }
 
     google.charts.load('current', {'packages':['corechart']});
@@ -45,7 +48,7 @@ $(async function () {
       var data = google.visualization.arrayToDataTable(datosGraf);
 
       var options = {
-        title: 'Company Performance',
+        title: 'Comparación desde Primer Caso',
         curveType: 'function',
         legend: { position: 'bottom' }
       };
@@ -63,11 +66,12 @@ $(async function () {
       //   data.addColumn('number', 'Day');
       data.addColumn('number', 'Argentina');
       data.addColumn('number', 'España');
+      data.addColumn('number', 'Italia');
       data.addRows(datosTable);
 
       var table = new google.visualization.Table(document.getElementById('table_div'));
 
-      table.draw(data, {showRowNumber: true, width: '10%', height: '100%'});
+      table.draw(data, {showRowNumber: true, width: '20%', height: '100%'});
     }
 
 
@@ -117,8 +121,6 @@ function CovidAPI() {
 
         await GetByCountrysAPI(function (data) {
             //Recorro todas las propiedades
-
-            console.log(data);
             result = data
             for (var key in data) {
                 result.push({ 'country': data[key].country,  'cases': data[key].cases});
