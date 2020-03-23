@@ -3,6 +3,8 @@ $(async function () {
     var resultArg = await api.GetByCountry('argentina');
     var resultEsp = await api.GetByCountry('spain');
 
+    var global = await api.GetByCountrys();
+
     var datosGraf = []
     var datosTable = []
     var datosGeo =[]
@@ -11,8 +13,16 @@ $(async function () {
     datosGraf.push(['Day','Argentina','España'])
     datosGeo.push(['Country','Cantidad de Casos'])
 
-    datosGeo.push(['Argentina', resultArg[resultArg.length-1].count])
-    datosGeo.push(['Spain', resultEsp[resultEsp.length-1].count])
+    // datosGeo.push(['Argentina', resultArg[resultArg.length-1].count])
+    // datosGeo.push(['Spain', resultEsp[resultEsp.length-1].count])
+
+    global.forEach(element => {
+
+            if(element.country == 'USA'){
+                element.country ='United States'
+            }
+        datosGeo.push([element.country, element.cases]);
+    });
     
     var filterArg = resultArg.filter(e => e.count > 0)
     var filterEsp = resultEsp.filter(e => e.count > 0)
@@ -85,6 +95,7 @@ $(async function () {
 function CovidAPI() {
 
     this.GetByCountry = GetByCountry
+    this.GetByCountrys = GetByCountrys
 
     async function GetByCountry(country) {
         var result = [];
@@ -101,9 +112,31 @@ function CovidAPI() {
         return result;
     }
 
+    async function GetByCountrys() {
+        var result = [];
+
+        await GetByCountrysAPI(function (data) {
+            //Recorro todas las propiedades
+
+            console.log(data);
+            result = data
+            for (var key in data) {
+                result.push({ 'country': data[key].country,  'cases': data[key].cases});
+            }
+        }
+        );
+        return result;
+    }
+
 
     async function GetByCountryAPI(country, callback) {
         const data = await fetch('https://corona.lmao.ninja/historical/' + country);
+        const response = await data.json();
+        callback(response);
+    }
+
+    async function GetByCountrysAPI(callback) {
+        const data = await fetch('https://corona.lmao.ninja/countries/');
         const response = await data.json();
         callback(response);
     }
